@@ -25,7 +25,7 @@ class SimplePlatformer extends FlameGame
     // make camera the same on every sized device
     camera.viewport = FixedResolutionViewport(Vector2(640, 330));
     // create the first level
-    loadLevel('level1.tmx');
+    loadLevel('level2.tmx');
     return super.onLoad();
   }
 

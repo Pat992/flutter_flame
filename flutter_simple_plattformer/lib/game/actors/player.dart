@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flame/extensions.dart';
 import 'package:flame/geometry.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/services.dart';
@@ -16,9 +17,12 @@ class Player extends SpriteComponent
   bool _jumpInput = false;
   bool _isOnGround = false;
   final _onGroundVector = Vector2(0, -1);
+  late Vector2 _minClamp;
+  late Vector2 _maxClamp;
 
   Player(
     Image image, {
+    required Rect levelBounds,
     Vector2? position,
     Vector2? size,
     Vector2? scale,
@@ -35,7 +39,11 @@ class Player extends SpriteComponent
           angle: angle,
           anchor: anchor,
           priority: priority,
-        );
+        ) {
+    // get the level bounds and add the player size / 2
+    _minClamp = levelBounds.topLeft.toVector2() + (size! / 2);
+    _maxClamp = levelBounds.bottomRight.toVector2() - (size / 2);
+  }
 
   @override
   Future<void>? onLoad() {
@@ -59,9 +67,12 @@ class Player extends SpriteComponent
       _jumpInput = false;
     }
     // add upper and lower limit
-    // the minimal gravity needs to be negative the jump-speed, so the player cn jump
+    // the minimal gravity needs to be negative the jump-speed, so the player can jump
     _velocity.y = _velocity.y.clamp(-_jumpSpeed, 300);
     position += _velocity * dt;
+
+    // make player stay in level
+    position.clamp(_minClamp, _maxClamp);
     // flip player sprite if necessary
     if (_hasAxisInput < 0 && scale.x > 0) {
       flipHorizontallyAroundCenter();
